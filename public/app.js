@@ -128,7 +128,11 @@ async function loadInitialData() {
 
   try {
     const healthResponse = await fetch("/api/health");
-    const health = await healthResponse.json();
+    const health = await readApiPayload(healthResponse);
+
+    if (!healthResponse.ok) {
+      throw new Error(getApiErrorMessage(health, "Health tekshiruvini o'qib bo'lmadi."));
+    }
 
     if (!health.keyConfigured) {
       apiStatus.textContent = "API key topilmadi";
@@ -166,10 +170,10 @@ async function loadInitialData() {
 async function loadVoices() {
   try {
     const response = await fetch("/api/voices");
-    const data = await response.json();
+    const data = await readApiPayload(response);
 
     if (!response.ok) {
-      throw new Error(normalizeErrorDetails(data.details) || data.error || "Voicesni yuklab bo'lmadi.");
+      throw new Error(getApiErrorMessage(data, "Voicesni yuklab bo'lmadi."));
     }
 
     const items = Array.isArray(data.voices) ? data.voices : [];
@@ -203,10 +207,10 @@ async function loadVoices() {
 async function loadModels(defaultModelId) {
   try {
     const response = await fetch("/api/models");
-    const data = await response.json();
+    const data = await readApiPayload(response);
 
     if (!response.ok) {
-      throw new Error(normalizeErrorDetails(data.details) || data.error || "Modelsni yuklab bo'lmadi.");
+      throw new Error(getApiErrorMessage(data, "Modelsni yuklab bo'lmadi."));
     }
 
     const items = Array.isArray(data.models) ? data.models : [];
@@ -389,7 +393,7 @@ async function handleSubmit(event) {
     });
 
     if (!response.ok) {
-      const errorData = await response.json();
+      const errorData = await readApiPayload(response);
       throw new Error(getFriendlyTtsError(errorData));
     }
 
@@ -697,6 +701,30 @@ function getFriendlyTtsError(errorData) {
   }
 
   return details || errorData?.error || "TTS so'rovi bajarilmadi.";
+}
+
+async function readApiPayload(response) {
+  const text = await response.text();
+
+  if (!text) {
+    return {};
+  }
+
+  try {
+    return JSON.parse(text);
+  } catch {
+    return {
+      error: text
+    };
+  }
+}
+
+function getApiErrorMessage(payload, fallbackMessage) {
+  if (!payload) {
+    return fallbackMessage;
+  }
+
+  return normalizeErrorDetails(payload.details) || payload.error || fallbackMessage;
 }
 
 function escapeHtml(value) {
