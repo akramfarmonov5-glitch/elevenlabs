@@ -3,6 +3,9 @@
   "version": "1.0.0",
   "description": "Minimal ElevenLabs Text-to-Speech project with a browser UI and local API.",
   "private": true,
+  "engines": {
+    "node": "22.x"
+  },
   "scripts": {
     "start": "node server.js",
     "dev": "node --watch server.js",
