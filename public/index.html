@@ -1,0 +1,188 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>ElevenLabs TTS Studio</title>
+    <link rel="stylesheet" href="/styles.css" />
+  </head>
+  <body>
+    <main class="shell">
+      <section class="hero">
+        <p class="eyebrow">ElevenLabs API Demo</p>
+        <h1>Textni ovozga aylantiring</h1>
+        <p class="lede">
+          Matn kiriting, voice tanlang va ElevenLabs Text-to-Speech API orqali
+          MP3 audio yarating.
+        </p>
+        <div class="status-bar">
+          <span id="apiStatus" class="status-pill">Tekshirilmoqda...</span>
+          <button id="reloadDataButton" class="ghost-button" type="button">
+            Voicesni yangilash
+          </button>
+        </div>
+      </section>
+
+      <section class="panel grid">
+        <form id="ttsForm" class="card form-card">
+          <label class="field">
+            <span>Matn</span>
+            <textarea
+              id="textInput"
+              name="text"
+              rows="8"
+              maxlength="5000"
+              placeholder="Masalan: Assalomu alaykum! Bu ElevenLabs orqali yaratilgan test audio."
+            ></textarea>
+          </label>
+
+          <label class="checkbox-field">
+            <input id="uzbekModeInput" type="checkbox" checked />
+            <span>Uzbek mode: o'zbekcha talaffuzga moslab yuborish</span>
+          </label>
+
+          <div class="helper-panel">
+            <strong>O'zbekcha talaffuz uchun tavsiya</strong>
+            <p><code>Eleven v3</code> tavsiya etiladi. <code>Language code</code> maydonini bo'sh qoldiring.</p>
+            <p><code>o'</code> va <code>g'</code> avtomatik talaffuzga mos ko'rinishga o'tadi.</p>
+            <p>Sana, vaqt, foiz va pul yozuvlari Uzbek mode ichida so'zga aylantiriladi.</p>
+            <p>Qisqartma va brendlarni imkon qadar talaffuzga yaqin yozing: <code>AI</code> o'rniga <code>ey-ay</code>.</p>
+          </div>
+
+          <label class="field">
+            <span>Uzbek mode preview</span>
+            <textarea
+              id="normalizedPreview"
+              rows="5"
+              readonly
+              placeholder="Normalizatsiya qilingan matn shu yerda ko'rinadi"
+            ></textarea>
+          </label>
+
+          <div class="field-group">
+            <label class="field">
+              <span>Voice</span>
+              <select id="voiceSelect" name="voiceId"></select>
+            </label>
+
+            <label class="field">
+              <span>Model</span>
+              <select id="modelSelect" name="modelId"></select>
+            </label>
+          </div>
+
+          <label class="field">
+            <span>Voice ID</span>
+            <input
+              id="voiceIdInput"
+              name="voiceIdManual"
+              type="text"
+              value="EXAVITQu4vr4xnSDxMaL"
+              placeholder="Masalan: EXAVITQu4vr4xnSDxMaL"
+            />
+          </label>
+
+          <div class="field-group">
+            <label class="field">
+              <span>Tasdiqlangan bepul presetlar</span>
+              <select id="presetVoiceSelect" name="presetVoiceSelect"></select>
+            </label>
+
+            <label class="field">
+              <span>Tez qo'llash</span>
+              <button id="applyPresetButton" class="ghost-button full-button" type="button">
+                Presetni qo'yish
+              </button>
+            </label>
+          </div>
+
+          <p class="helper-text">
+            Agar API `paid_plan_required` desa, demak `library voice` tanlangan.
+            Free planda API bilan bunday voice ishlamaydi. Premade yoki o'zingizning
+            voice ID'ingizdan foydalaning. Pastdagi presetlar esa sizning kalit bilan
+            real tekshirilib qo'shildi.
+          </p>
+
+          <div class="field-group">
+            <label class="field">
+              <span>Language code (optional)</span>
+              <input
+                id="languageCodeInput"
+                name="languageCode"
+                type="text"
+                placeholder="Bo'sh qoldirsangiz auto"
+              />
+            </label>
+
+            <label class="field">
+              <span>Output format</span>
+              <select id="outputFormatSelect" name="outputFormat">
+                <option value="mp3_44100_128">mp3_44100_128</option>
+                <option value="mp3_44100_64">mp3_44100_64</option>
+                <option value="mp3_22050_32">mp3_22050_32</option>
+              </select>
+            </label>
+          </div>
+
+          <div class="slider-grid">
+            <label class="field">
+              <span>Stability <strong id="stabilityValue">0.5</strong></span>
+              <input id="stabilityInput" type="range" min="0" max="1" step="0.01" value="0.5" />
+            </label>
+
+            <label class="field">
+              <span>Similarity <strong id="similarityValue">0.75</strong></span>
+              <input id="similarityInput" type="range" min="0" max="1" step="0.01" value="0.75" />
+            </label>
+
+            <label class="field">
+              <span>Style <strong id="styleValue">0</strong></span>
+              <input id="styleInput" type="range" min="0" max="1" step="0.01" value="0" />
+            </label>
+
+            <label class="field">
+              <span>Speed <strong id="speedValue">1</strong></span>
+              <input id="speedInput" type="range" min="0.7" max="1.2" step="0.01" value="1" />
+            </label>
+          </div>
+
+          <label class="checkbox-field">
+            <input id="speakerBoostInput" type="checkbox" checked />
+            <span>Use speaker boost</span>
+          </label>
+
+          <div class="actions">
+            <button id="generateButton" class="primary-button" type="submit">
+              Audio yaratish
+            </button>
+            <button id="previewVoiceButton" class="ghost-button" type="button">
+              Voice preview
+            </button>
+          </div>
+        </form>
+
+        <aside class="card output-card">
+          <div class="meta-row">
+            <h2>Natija</h2>
+            <span id="characterCount" class="muted">0 ta belgi</span>
+          </div>
+
+          <p id="messageBox" class="message">
+            `.env` ichiga API key yozing. Agar kalitda read permission bo'lmasa ham, manual
+            `voice ID` bilan audio yaratish mumkin.
+          </p>
+
+          <audio id="audioPlayer" controls></audio>
+
+          <a id="downloadLink" class="download-link hidden" download="speech.mp3">
+            MP3 ni yuklab olish
+          </a>
+
+          <div id="voiceInfo" class="voice-info"></div>
+        </aside>
+      </section>
+    </main>
+
+    <script src="/app.js"></script>
+  </body>
+</html>
